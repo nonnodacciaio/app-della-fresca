@@ -90,6 +90,23 @@
             ],
             "scripts": []
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {
+            "version": 2
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "app-della-fresca:build:production",
+              "serveTarget": "app-della-fresca:serve:production"
+            },
+            "development": {
+              "buildTarget": "app-della-fresca:build:development",
+              "serveTarget": "app-della-fresca:serve:development"
+            }
+          },
+          "defaultConfiguration": "production"
         }
       }
     }

@@ -1,0 +1,9 @@
+{
+  "hosting": [
+    {
+      "target": "app-della-fresca",
+      "source": ".",
+      "frameworksBackend": {}
+    }
+  ]
+}
