@@ -14,8 +14,8 @@ import { RouterModule } from "@angular/router";
 			<a
 				mat-button
 				color="accent"
-				routerLink="/not-implemented"
-				>{{ game.date.toDate() | date : "dd/MM/yyyy" }}</a
+				[routerLink]="'/game/' + game.id"
+				>{{ game.date?.toDate() | date : "dd/MM/yyyy" }}</a
 			>
 			} @empty {Non ci sono giocate da visualizzare}
 		</div>`,
