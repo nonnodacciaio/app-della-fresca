@@ -15,6 +15,8 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_APP_DELLA_FRESCA }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_PERSONAL_PORTFOLIO_F701D }}"
           channelId: live
-          projectId: app-della-fresca
+          projectId: personal-portfolio-f701d
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
