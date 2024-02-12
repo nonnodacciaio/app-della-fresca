@@ -1,13 +1,4 @@
 {
-  "targets": {
-    "app-della-fresca": {
-      "hosting": {
-        "app-della-fresca": [
-          "app-della-fresca"
-        ]
-      }
-    }
-  },
   "projects": {
     "default": "app-della-fresca"
   }
