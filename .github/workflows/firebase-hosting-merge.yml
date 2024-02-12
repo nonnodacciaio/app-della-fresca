@@ -15,5 +15,6 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_APP_DELLA_FRESCA }}"
           channelId: live
           projectId: app-della-fresca
+          source: "dist/app-della-fresca" # Change this to the directory where your built files are located
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
