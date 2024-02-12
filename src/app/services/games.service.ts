@@ -40,6 +40,7 @@ export interface Game {
 }
 
 export interface PlayerData {
-	player: DocumentReference;
+	playerId: string;
+	username: string;
 	bet: number;
 }
