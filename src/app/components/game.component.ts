@@ -14,29 +14,25 @@ import { Game, GamesService, PlayerData } from "../services/games.service";
 		<h3>Pagina work in progress</h3>
 		<mat-table [dataSource]="dataSource">
 			<ng-container matColumnDef="player">
-				<th
-					mat-header-cell
+				<mat-header-cell
 					*matHeaderCellDef>
 					Giocatore
-				</th>
-				<td
-					mat-cell
+				</mat-header-cell>
+				<mat-cell
 					*matCellDef="let element">
 					{{ element.username || "Caricamento..." }}
-				</td>
+				</mat-cell>
 			</ng-container>
 
 			<ng-container matColumnDef="bet">
-				<th
-					mat-header-cell
+				<mat-header-cell
 					*matHeaderCellDef>
 					Puntata
-				</th>
-				<td
-					mat-cell
+				</mat-header-cell>
+				<mat-cell
 					*matCellDef="let element">
 					{{ element.bet }}
-				</td>
+				</mat-cell>
 			</ng-container>
 
 			<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
