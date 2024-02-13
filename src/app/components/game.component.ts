@@ -30,7 +30,7 @@ import { Game, GamesService, PlayerData } from "../services/games.service";
 			<ng-container matColumnDef="winning">
 				<mat-header-cell *matHeaderCellDef> Vincita </mat-header-cell>
 				<mat-cell *matCellDef="let element">
-					{{ getWinningAmount(element.bet) || "Caricamento..." }}
+					{{ element.winnings }}
 				</mat-cell>
 			</ng-container>
 
@@ -44,7 +44,7 @@ import { Game, GamesService, PlayerData } from "../services/games.service";
 export class GameComponent implements OnInit, OnDestroy {
 	id = "";
 	game: Game | undefined;
-	dataSource = new MatTableDataSource<PlayerData>();
+	dataSource = new MatTableDataSource<PlayerDataInfo>();
 	displayedColumns: string[] = ["player", "bet", "winning"];
 	destroy$ = new Subject();
 
@@ -61,7 +61,8 @@ export class GameComponent implements OnInit, OnDestroy {
 			.subscribe({
 				next: (result: DocumentData) => {
 					this.game = result[0] as Game;
-					this.dataSource.data = this.game?.playersData ?? [];
+					this.dataSource.data = this.toPlayerDataInfo(this.game?.playersData) ?? [];
+					this.addTotalsRow();
 				},
 				error: (error: Response) => console.log(error.statusText)
 			});
@@ -83,5 +84,31 @@ export class GameComponent implements OnInit, OnDestroy {
 		}
 
 		return;
+	}
+
+	private toPlayerDataInfo(playerData?: PlayerData[]): PlayerDataInfo[] {
+		if (!playerData) return [];
+
+		return playerData.map(player => new PlayerDataInfo(player.playerId, player.username, player.bet, this.getWinningAmount(player.bet) ?? 0));
+	}
+
+	private addTotalsRow() {
+		const totalBet = this.dataSource.data.reduce((acc, player) => acc + player.bet, 0) ?? 0;
+		const totalWinning = this.game?.result ?? 0;
+		this.dataSource.data.push({ username: "Totale", bet: totalBet, playerId: null, winnings: totalWinning });
+	}
+}
+
+class PlayerDataInfo implements PlayerData {
+	playerId: string | null;
+	username: string;
+	bet: number;
+	winnings: number;
+
+	constructor(playerId: string | null, username: string, bet: number, winnings: number) {
+		this.playerId = playerId;
+		this.username = username;
+		this.bet = bet;
+		this.winnings = winnings;
 	}
 }

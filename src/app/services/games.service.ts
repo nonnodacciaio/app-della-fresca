@@ -40,7 +40,7 @@ export interface Game {
 }
 
 export interface PlayerData {
-	playerId: string;
+	playerId: string | null;
 	username: string;
 	bet: number;
 }
