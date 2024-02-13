@@ -18,7 +18,6 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 	template: `@if (game) {
 		<h1 class="text-center">Giocata del {{ game.date?.toDate() | date : "dd/MM/yyy" || "Caricamento..." }}</h1>
 		<h3>Pagina work in progress</h3>
-		<h3>Al momento la modifica della vincita totale funziona quasi bene</h3>
 		<h3>Se volete testare fate pure, ma ASSOLUTAMENTE non mettete mai un numero negativo se modificate la vincita totale</h3>
 		<mat-table [dataSource]="dataSource">
 			<ng-container matColumnDef="player">
@@ -76,13 +75,14 @@ export class GameComponent implements OnInit, OnDestroy {
 	}
 
 	private refreshGames() {
+		this.dataSource.data = [];
 		this.gamesService
 			.getGame(this.id)
 			.pipe(takeUntil(this.destroy$))
 			.subscribe({
 				next: (result: DocumentData) => {
 					this.game = result[0] as Game;
-					this.dataSource.data = this.toPlayerDataInfo(this.game?.playersData) ?? [];
+					this.dataSource.data = this.toPlayerDataInfo(this.game?.playersData);
 					this.addTotalsRow();
 				},
 				error: (error: Response) => console.log(error.statusText)
@@ -134,7 +134,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	private addTotalsRow() {
 		const totalBet = this.dataSource.data.reduce((acc, player) => acc + player.bet, 0) ?? 0;
 		const totalWinning = this.game?.result ?? 0;
-		this.dataSource.data.push({ username: "Totale", bet: totalBet, playerId: null, winnings: totalWinning });
+		this.dataSource.data = [...this.dataSource.data, new PlayerDataInfo(null, "Totale", totalBet, totalWinning)];
 	}
 }
 
