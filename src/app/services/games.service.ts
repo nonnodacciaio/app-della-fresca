@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { DocumentData, Firestore, Timestamp, collection, collectionData } from "@angular/fire/firestore";
-import { getDocs, query, where } from "firebase/firestore";
+import { doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { Observable, from, map } from "rxjs";
 
 @Injectable({ providedIn: "root" })
@@ -26,6 +26,14 @@ export class GamesService {
 		return from(
 			getDocs(query(collection(this.firestore, "games"), where("id", "==", id))).then(querySnapshot => {
 				return querySnapshot.docs.map(doc => doc.data());
+			})
+		);
+	}
+
+	updateGameResult(id: string, newResult: number) {
+		return from(
+			getDocs(query(collection(this.firestore, "games"), where("id", "==", id))).then(querySnapshot => {
+				return updateDoc(querySnapshot.docs[0].ref, { result: newResult });
 			})
 		);
 	}
