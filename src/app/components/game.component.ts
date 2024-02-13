@@ -14,24 +14,23 @@ import { Game, GamesService, PlayerData } from "../services/games.service";
 		<h3>Pagina work in progress</h3>
 		<mat-table [dataSource]="dataSource">
 			<ng-container matColumnDef="player">
-				<mat-header-cell
-					*matHeaderCellDef>
-					Giocatore
-				</mat-header-cell>
-				<mat-cell
-					*matCellDef="let element">
+				<mat-header-cell *matHeaderCellDef> Giocatore </mat-header-cell>
+				<mat-cell *matCellDef="let element">
 					{{ element.username || "Caricamento..." }}
 				</mat-cell>
 			</ng-container>
 
 			<ng-container matColumnDef="bet">
-				<mat-header-cell
-					*matHeaderCellDef>
-					Puntata
-				</mat-header-cell>
-				<mat-cell
-					*matCellDef="let element">
+				<mat-header-cell *matHeaderCellDef> Puntata </mat-header-cell>
+				<mat-cell *matCellDef="let element">
 					{{ element.bet }}
+				</mat-cell>
+			</ng-container>
+
+			<ng-container matColumnDef="winning">
+				<mat-header-cell *matHeaderCellDef> Vincita </mat-header-cell>
+				<mat-cell *matCellDef="let element">
+					{{ getWinningAmount(element.bet) || "Caricamento..." }}
 				</mat-cell>
 			</ng-container>
 
@@ -46,7 +45,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	id = "";
 	game: Game | undefined;
 	dataSource = new MatTableDataSource<PlayerData>();
-	displayedColumns: string[] = ["player", "bet"];
+	displayedColumns: string[] = ["player", "bet", "winning"];
 	destroy$ = new Subject();
 
 	constructor(private gamesService: GamesService, private route: ActivatedRoute) {
@@ -71,5 +70,18 @@ export class GameComponent implements OnInit, OnDestroy {
 	ngOnDestroy(): void {
 		this.destroy$.next(null);
 		this.destroy$.unsubscribe();
+	}
+
+	getWinningAmount(bet: number) {
+		if (!bet) {
+			return;
+		}
+		const totalBets = this.game?.playersData?.reduce((acc, player) => acc + player.bet, 0);
+
+		if (totalBets) {
+			return (bet / totalBets) * (this.game?.result ?? 0);
+		}
+
+		return;
 	}
 }
