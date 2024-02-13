@@ -1,8 +1,7 @@
 import { Injectable, inject } from "@angular/core";
-import { DocumentData, DocumentReference, Firestore, Timestamp, collection, collectionData, docData } from "@angular/fire/firestore";
-import { Observable, TimestampProvider, from, map } from "rxjs";
-import { Player } from "./players.service";
-import { doc, getDocs, query, where } from "firebase/firestore";
+import { DocumentData, Firestore, Timestamp, collection, collectionData } from "@angular/fire/firestore";
+import { getDocs, query, where } from "firebase/firestore";
+import { Observable, from, map } from "rxjs";
 
 @Injectable({ providedIn: "root" })
 export class GamesService {
