@@ -1,2 +1,14 @@
 
-<router-outlet />
+<mat-drawer-container autosize>
+  <mat-drawer #drawer  mode="side">
+  </mat-drawer>
+
+  <div>
+    <toolbar></toolbar>
+    <button type="button" mat-button (click)="drawer.toggle()">
+      Toggle sidenav
+    </button>
+        <router-outlet />
+  </div>
+
+</mat-drawer-container>
