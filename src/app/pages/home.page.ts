@@ -7,8 +7,7 @@ import { MatIconModule } from "@angular/material/icon";
 	selector: "home",
 	standalone: true,
 	imports: [GamesListComponent, MatButtonModule, MatIconModule],
-	template: `<h1 class="text-center">Benvenuto nell'app della fresca</h1>
-		<h3 class="text-center">Work in progress</h3>
+	template: `
 		<div class="flex justify-center m-4">
 			<button
 				mat-raised-button
