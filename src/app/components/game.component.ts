@@ -50,6 +50,14 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 			</button>
 		</div>
 		} @else {Non è stato possibile recuperare i dati della giocata}`,
+	styles: [
+		`
+			mat-header-row,
+			mat-row {
+				background-color: #ddd;
+			}
+		`
+	],
 	imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatDialogModule, MatSnackBarModule]
 })
 export class GameComponent implements OnInit, OnDestroy {
