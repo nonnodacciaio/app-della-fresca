@@ -17,8 +17,6 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 	standalone: true,
 	template: `@if (game) {
 		<h1 class="text-center">Giocata del {{ game.date?.toDate() | date : "dd/MM/yyy" || "Caricamento..." }}</h1>
-		<h3>Pagina work in progress</h3>
-		<h3>Se volete testare fate pure, ma ASSOLUTAMENTE non mettete mai un numero negativo se modificate la vincita totale</h3>
 		<mat-table [dataSource]="dataSource">
 			<ng-container matColumnDef="player">
 				<mat-header-cell *matHeaderCellDef> Giocatore </mat-header-cell>
