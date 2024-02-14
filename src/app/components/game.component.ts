@@ -11,12 +11,12 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogContent, MatDialogModule, MatDialo
 import { MatInputModule } from "@angular/material/input";
 import { FirebaseError } from "firebase/app";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { ToolbarService } from "../services/toolbar.service";
 
 @Component({
 	selector: "game",
 	standalone: true,
 	template: `@if (game) {
-		<h1 class="text-center">Giocata del {{ game.date?.toDate() | date : "dd/MM/yyy" || "Caricamento..." }}</h1>
 		<mat-table [dataSource]="dataSource">
 			<ng-container matColumnDef="player">
 				<mat-header-cell *matHeaderCellDef> Giocatore </mat-header-cell>
@@ -65,7 +65,7 @@ export class GameComponent implements OnInit, OnDestroy {
 	displayedColumns: string[] = ["player", "bet", "winning"];
 	destroy$ = new Subject();
 
-	constructor(private gamesService: GamesService, private route: ActivatedRoute, private dialog: MatDialog, private snackBar: MatSnackBar) {
+	constructor(private gamesService: GamesService, private route: ActivatedRoute, private dialog: MatDialog, private snackBar: MatSnackBar, private toolbarService: ToolbarService) {
 		this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
 			this.id = params["id"];
 		});
@@ -90,6 +90,7 @@ export class GameComponent implements OnInit, OnDestroy {
 					this.game = result[0] as Game;
 					this.dataSource.data = this.toPlayerDataInfo(this.game?.playersData);
 					this.addTotalsRow();
+					this.toolbarService.toolbarText = `Giocata del ${this.game?.date?.toDate().toLocaleDateString("it-it", { day: "2-digit", month: "2-digit", year: "numeric" })}`;
 				},
 				error: (error: Response) => console.log(error.statusText)
 			});

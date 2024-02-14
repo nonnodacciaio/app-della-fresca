@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { GamesListComponent } from "../components/games-list.component";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { ToolbarService } from "../services/toolbar.service";
 
 @Component({
 	selector: "home",
@@ -15,6 +16,11 @@ import { MatIconModule } from "@angular/material/icon";
 				<mat-icon>add</mat-icon>Balla la fresca
 			</button>
 		</div>
-		<games-list></games-list> `
+		<games-list></games-list>
+	`
 })
-export class HomePage {}
+export class HomePage {
+	constructor(private toolbarService: ToolbarService) {
+		this.toolbarService.toolbarText = "App della fresca";
+	}
+}
