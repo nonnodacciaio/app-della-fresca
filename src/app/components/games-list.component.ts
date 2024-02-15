@@ -4,6 +4,7 @@ import { Subject, takeUntil } from "rxjs";
 import { CommonModule } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterModule } from "@angular/router";
+import { MatDialog } from "@angular/material/dialog";
 
 @Component({
 	selector: "games-list",

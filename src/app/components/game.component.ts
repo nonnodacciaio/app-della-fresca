@@ -52,7 +52,8 @@ import { ToolbarService } from "../services/toolbar.service";
 		`
 			mat-header-row,
 			mat-row {
-				background-color: #ddd;
+				background-color: #1a202c;
+				color: #cbd5e0;
 			}
 		`
 	],
