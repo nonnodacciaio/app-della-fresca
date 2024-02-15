@@ -1,11 +1,10 @@
-import { Component, OnInit } from "@angular/core";
-import { Game, GamesService } from "../services/games.service";
-import { Subject, takeUntil } from "rxjs";
 import { CommonModule } from "@angular/common";
+import { Component, OnInit } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterModule } from "@angular/router";
-import { MatDialog } from "@angular/material/dialog";
 import { FirebaseError } from "firebase/app";
+import { Subject, takeUntil } from "rxjs";
+import { Game, GamesService } from "../services/games.service";
 
 @Component({
 	selector: "games-list",
