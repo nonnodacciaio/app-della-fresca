@@ -1,53 +1,43 @@
 import { Injectable, inject } from "@angular/core";
-import { DocumentData, Firestore, Timestamp, collection, collectionData } from "@angular/fire/firestore";
-import { doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { Observable, from, map } from "rxjs";
+import { Firestore, Timestamp, collection } from "@angular/fire/firestore";
+import { DocumentReference, addDoc, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { from } from "rxjs";
 
 @Injectable({ providedIn: "root" })
 export class GamesService {
-	games$: Observable<DocumentData>;
-	firestore: Firestore = inject(Firestore);
+	private firestore: Firestore = inject(Firestore);
 
-	constructor() {
-		const itemCollection = collection(this.firestore, "games");
-		this.games$ = collectionData(itemCollection).pipe(
-			map((games: any[]) => {
-				return games.map((game: any) => ({
-					id: game.id,
-					date: game.date,
-					playersData: game.playersData,
-					result: game.result
-				}));
-			})
-		);
+	collectionRef = collection(this.firestore, "games");
+
+	getAll() {
+		return from(getDocs(this.collectionRef));
 	}
 
-	getGame(id: string): Observable<DocumentData> {
-		return from(
-			getDocs(query(collection(this.firestore, "games"), where("id", "==", id))).then(querySnapshot => {
-				return querySnapshot.docs.map(doc => doc.data());
-			})
-		);
+	get(id: string) {
+		return from(getDoc(doc(this.collectionRef, id)));
 	}
 
-	updateGameResult(id: string, newResult: number) {
-		return from(
-			getDocs(query(collection(this.firestore, "games"), where("id", "==", id))).then(querySnapshot => {
-				return updateDoc(querySnapshot.docs[0].ref, { result: newResult });
-			})
-		);
+	create(game: Game) {
+		addDoc(this.collectionRef, game);
+	}
+
+	update(id: string, data: any) {
+		return from(updateDoc(doc(this.collectionRef, id), data));
+	}
+
+	delete(id: string) {
+		return deleteDoc(doc(this.collectionRef, id));
 	}
 }
 
 export interface Game {
-	id: string;
+	id?: string;
 	date?: Timestamp;
 	playersData?: PlayerData[];
 	result?: number;
 }
 
 export interface PlayerData {
-	playerId: string | null;
-	username: string;
+	playerRef: DocumentReference;
 	bet: number;
 }

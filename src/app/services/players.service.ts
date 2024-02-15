@@ -1,33 +1,37 @@
 import { Injectable, inject } from "@angular/core";
-import { DocumentData, Firestore, collection, collectionData, getDocs, query, where } from "@angular/fire/firestore";
-import { Observable, from } from "rxjs";
+import { Firestore, collection } from "@angular/fire/firestore";
+import { addDoc, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { from } from "rxjs";
 
 @Injectable({ providedIn: "root" })
 export class PlayersService {
-	players$: Observable<DocumentData>;
-	firestore: Firestore = inject(Firestore);
+	private firestore: Firestore = inject(Firestore);
 
-	constructor() {
-		const itemCollection = collection(this.firestore, "players");
-		this.players$ = collectionData(itemCollection);
+	collectionRef = collection(this.firestore, "players");
+
+	getAll() {
+		return from(getDocs(this.collectionRef));
 	}
 
-	getPlayer(id: string): Observable<DocumentData> {
-		console.log(id);
-		return from(
-			getDocs(query(collection(this.firestore, "players"), where("id", "==", id))).then(querySnapshot => {
-				return querySnapshot.docs.map(doc => doc.data());
-			})
-		);
+	get(id: string) {
+		return from(getDoc(doc(this.collectionRef, id)));
 	}
 
-	// getPlayers(): Player[] {
+	create(game: Player) {
+		addDoc(this.collectionRef, game);
+	}
 
-	// }
+	update(id: string, data: any) {
+		return updateDoc(doc(this.collectionRef, id), data);
+	}
+
+	delete(id: string) {
+		return deleteDoc(doc(this.collectionRef, id));
+	}
 }
 
 export interface Player {
-	id: string;
-	email: string;
-	username: string;
+	id?: string;
+	email?: string;
+	username?: string;
 }

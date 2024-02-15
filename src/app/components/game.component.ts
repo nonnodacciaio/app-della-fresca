@@ -1,16 +1,17 @@
 import { CommonModule } from "@angular/common";
 import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogContent, MatDialogModule, MatDialogTitle } from "@angular/material/dialog";
+import { MatIconModule } from "@angular/material/icon";
+import { MatInputModule } from "@angular/material/input";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { ActivatedRoute } from "@angular/router";
-import { DocumentData } from "firebase/firestore";
-import { Subject, takeUntil } from "rxjs";
-import { Game, GamesService, PlayerData } from "../services/games.service";
-import { MatButtonModule } from "@angular/material/button";
-import { MatIconModule } from "@angular/material/icon";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogContent, MatDialogModule, MatDialogTitle } from "@angular/material/dialog";
-import { MatInputModule } from "@angular/material/input";
 import { FirebaseError } from "firebase/app";
-import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { getDoc } from "firebase/firestore";
+import { Subject, from, takeUntil } from "rxjs";
+import { Game, GamesService } from "../services/games.service";
+import { Player, PlayersService } from "../services/players.service";
 import { ToolbarService } from "../services/toolbar.service";
 
 @Component({
@@ -61,19 +62,27 @@ import { ToolbarService } from "../services/toolbar.service";
 })
 export class GameComponent implements OnInit, OnDestroy {
 	id = "";
-	game: Game | undefined;
+	game?: Game;
+	players: Player[] = [];
 	dataSource = new MatTableDataSource<PlayerDataInfo>();
 	displayedColumns: string[] = ["player", "bet", "winning"];
 	destroy$ = new Subject();
 
-	constructor(private gamesService: GamesService, private route: ActivatedRoute, private dialog: MatDialog, private snackBar: MatSnackBar, private toolbarService: ToolbarService) {
+	constructor(
+		private gamesService: GamesService,
+		private route: ActivatedRoute,
+		private dialog: MatDialog,
+		private snackBar: MatSnackBar,
+		private toolbarService: ToolbarService,
+		private playersService: PlayersService
+	) {
 		this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
 			this.id = params["id"];
 		});
 	}
 
 	ngOnInit(): void {
-		this.refreshGames();
+		this.getGame();
 	}
 
 	ngOnDestroy(): void {
@@ -83,18 +92,51 @@ export class GameComponent implements OnInit, OnDestroy {
 
 	private refreshGames() {
 		this.dataSource.data = [];
+	}
+
+	private getGame() {
 		this.gamesService
-			.getGame(this.id)
+			.get(this.id)
 			.pipe(takeUntil(this.destroy$))
 			.subscribe({
-				next: (result: DocumentData) => {
-					this.game = result[0] as Game;
-					this.dataSource.data = this.toPlayerDataInfo(this.game?.playersData);
-					this.addTotalsRow();
+				next: result => {
+					this.game = { id: result.id, ...result.data() };
 					this.toolbarService.toolbarText = `Giocata del ${this.game?.date?.toDate().toLocaleDateString("it-it", { day: "2-digit", month: "2-digit", year: "numeric" })}`;
 				},
-				error: (error: Response) => console.log(error.statusText)
+				error: (error: FirebaseError) => console.error(error),
+				complete: () => this.getPlayersData()
 			});
+	}
+
+	private toPlayerDataInfo() {
+		this.dataSource.data =
+			this.game?.playersData?.map(playerData => {
+				const player = this.players.find(p => p.id == playerData.playerRef.id);
+				const playerDataInfo: PlayerDataInfo = {
+					playerId: player?.id,
+					username: player?.username,
+					bet: playerData.bet,
+					winnings: this.getWinningAmount(playerData.bet)
+				};
+				return playerDataInfo;
+			}) ?? [];
+
+		this.addTotalsRow();
+	}
+
+	private getPlayersData() {
+		this.game?.playersData?.forEach(playerData => {
+			if (playerData && playerData.playerRef && playerData.playerRef.id) {
+				this.playersService
+					.get(playerData.playerRef.id)
+					.pipe(takeUntil(this.destroy$))
+					.subscribe({
+						next: result => this.players.push({ id: result.id, ...result.data() }),
+						error: (error: FirebaseError) => console.error(error),
+						complete: () => this.toPlayerDataInfo()
+					});
+			}
+		});
 	}
 
 	getWinningAmount(bet: number) {
@@ -120,44 +162,32 @@ export class GameComponent implements OnInit, OnDestroy {
 			}
 
 			if (result && this.game) {
+				this.game.result = result;
 				this.gamesService
-					.updateGameResult(this.id, result)
+					.update(this.id, this.game)
 					.pipe(takeUntil(this.destroy$))
 					.subscribe({
 						error: (error: FirebaseError) => console.log(error),
 						next: () => {
-							this.refreshGames();
+							this.getGame();
 						}
 					});
 			}
 		});
 	}
 
-	private toPlayerDataInfo(playerData?: PlayerData[]): PlayerDataInfo[] {
-		if (!playerData) return [];
-
-		return playerData.map(player => new PlayerDataInfo(player.playerId, player.username, player.bet, this.getWinningAmount(player.bet) ?? 0));
-	}
-
 	private addTotalsRow() {
-		const totalBet = this.dataSource.data.reduce((acc, player) => acc + player.bet, 0) ?? 0;
+		const totalBet = this.dataSource.data.reduce((acc, player) => acc + (player.bet ?? 0), 0) ?? 0;
 		const totalWinning = this.game?.result ?? 0;
-		this.dataSource.data = [...this.dataSource.data, new PlayerDataInfo(null, "Totale", totalBet, totalWinning)];
+		this.dataSource.data = [...this.dataSource.data, { playerId: null, username: "Totale", bet: totalBet, winnings: totalWinning }];
 	}
 }
 
-class PlayerDataInfo implements PlayerData {
-	playerId: string | null;
-	username: string;
-	bet: number;
-	winnings: number;
-
-	constructor(playerId: string | null, username: string, bet: number, winnings: number) {
-		this.playerId = playerId;
-		this.username = username;
-		this.bet = bet;
-		this.winnings = winnings;
-	}
+interface PlayerDataInfo {
+	playerId?: string | null;
+	username?: string;
+	bet?: number;
+	winnings?: number;
 }
 
 @Component({

@@ -5,6 +5,7 @@ import { CommonModule } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterModule } from "@angular/router";
 import { MatDialog } from "@angular/material/dialog";
+import { FirebaseError } from "firebase/app";
 
 @Component({
 	selector: "games-list",
@@ -14,8 +15,8 @@ import { MatDialog } from "@angular/material/dialog";
 			@for (game of games; track $index) {
 			<a
 				mat-button
-				color="accent"
 				[routerLink]="'/game/' + game.id"
+				color="accent"
 				>{{ game.date?.toDate() | date : "dd/MM/yyyy" }}</a
 			>
 			} @empty {Non ci sono giocate da visualizzare}
@@ -38,8 +39,12 @@ export class GamesListComponent implements OnInit {
 	}
 
 	getGames() {
-		this.service.games$.pipe(takeUntil(this.destroy$)).subscribe(games => {
-			this.games = games as Game[];
-		});
+		this.service
+			.getAll()
+			.pipe(takeUntil(this.destroy$))
+			.subscribe({
+				next: result => result.forEach(doc => this.games.push({ id: doc.id, ...doc.data() })),
+				error: (error: FirebaseError) => console.error(error)
+			});
 	}
 }
