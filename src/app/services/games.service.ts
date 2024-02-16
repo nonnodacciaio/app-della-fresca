@@ -18,7 +18,7 @@ export class GamesService {
 	}
 
 	create(game: Game) {
-		addDoc(this.collectionRef, game);
+		return from(addDoc(this.collectionRef, game));
 	}
 
 	update(id: string, data: any) {

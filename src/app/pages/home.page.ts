@@ -1,17 +1,17 @@
-import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
-import { GamesListComponent } from "../components/games-list.component";
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
+import { MatDialog, MatDialogContent, MatDialogModule, MatDialogTitle } from "@angular/material/dialog";
 import { MatIconModule } from "@angular/material/icon";
-import { ToolbarService } from "../services/toolbar.service";
-import { MAT_DIALOG_DATA, MatDialog, MatDialogContent, MatDialogModule, MatDialogTitle } from "@angular/material/dialog";
-import { FirebaseError } from "firebase/app";
-import { Subject, takeUntil } from "rxjs";
-import { EditTotalWinningsDialog } from "../components/game.component";
-import { Game, GamesService, PlayerData } from "../services/games.service";
 import { MatInputModule } from "@angular/material/input";
-import { documentId } from "firebase/firestore";
+import { MatSelectChange, MatSelectModule } from "@angular/material/select";
+import { DocumentReference, Timestamp } from "firebase/firestore";
+import { Subject, takeUntil } from "rxjs";
+import { GamesListComponent } from "../components/games-list.component";
+import { Game, GamesService } from "../services/games.service";
 import { Player, PlayersService } from "../services/players.service";
-import { MatSelectModule } from "@angular/material/select";
+import { ToolbarService } from "../services/toolbar.service";
+import { FirebaseError } from "firebase/app";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
 	selector: "home",
@@ -26,13 +26,14 @@ import { MatSelectModule } from "@angular/material/select";
 				<mat-icon>add</mat-icon>Balla la fresca
 			</button>
 		</div>
-		<games-list></games-list>
+		<games-list #gameslist></games-list>
 	`
 })
 export class HomePage implements OnDestroy {
+	@ViewChild("gameslist") gamesList: GamesListComponent | undefined;
 	destroy$ = new Subject();
 
-	constructor(private toolbarService: ToolbarService, private gamesService: GamesService, private dialog: MatDialog) {
+	constructor(private toolbarService: ToolbarService, private gamesService: GamesService, private dialog: MatDialog, private snackBar: MatSnackBar) {
 		this.toolbarService.toolbarText = "App della fresca";
 	}
 
@@ -44,7 +45,12 @@ export class HomePage implements OnDestroy {
 	addGame() {
 		const dialogRef = this.dialog.open(AddGameDialog);
 
-		dialogRef.afterClosed().subscribe(() => console.log("Dialog closed"));
+		dialogRef.afterClosed().subscribe((result: Game) =>
+			this.gamesService
+				.create(result)
+				.pipe(takeUntil(this.destroy$))
+				.subscribe({ next: () => this.gamesList?.getGames(), error: (error: FirebaseError) => this.snackBar.open(`Errore durante la creazione di una nuova giocata: ${error.message}`, "Chiudi") })
+		);
 	}
 }
 
@@ -52,26 +58,41 @@ export class HomePage implements OnDestroy {
 	selector: "add-game",
 	standalone: true,
 	template: `<h2 mat-dialog-title>Aggiungi una giocata</h2>
-		<h3>Work in progress</h3>
 		<mat-dialog-content
 			><mat-form-field>
 				<mat-label>Seleziona giocatori</mat-label
-				><mat-select multiple
+				><mat-select
+					(selectionChange)="selectionChange($event)"
+					multiple
 					>@for(player of players; track player) {<mat-option [value]="player">{{ player.username }}</mat-option
 					>}</mat-select
 				></mat-form-field
-			><button
+			>
+			@for(player of selectedPlayers; track player) {
+			<div>
+				{{ player.username }}
+				<mat-form-field>
+					<mat-label>Inserisci puntata</mat-label>
+					<input
+						matInput
+						type="number"
+						(input)="betChange($event, player)" />
+				</mat-form-field>
+			</div>
+			}
+			<button
 				mat-icon-button
 				color="accent"
-				[mat-dialog-close]="">
+				[mat-dialog-close]="game">
 				<mat-icon>add</mat-icon>
 			</button></mat-dialog-content
 		>`,
 	imports: [MatDialogModule, MatButtonModule, MatInputModule, MatDialogTitle, MatDialogContent, MatIconModule, MatSelectModule]
 })
 export class AddGameDialog implements OnInit, OnDestroy {
-	game: Game = {};
-	players: Player[] = [];
+	game: Game = { date: Timestamp.now(), result: 0 };
+	players: PlayerInfo[] = [];
+	selectedPlayers: PlayerInfo[] = [];
 	destroy$ = new Subject();
 
 	constructor(private playersService: PlayersService) {}
@@ -88,8 +109,26 @@ export class AddGameDialog implements OnInit, OnDestroy {
 			.pipe(takeUntil(this.destroy$))
 			.subscribe(result => {
 				result.docs.forEach(doc => {
-					this.players.push({ id: doc.id, ...(doc.data() as Player) });
+					this.players.push({ id: doc.id, playerRef: doc.ref, ...(doc.data() as Player) });
 				});
 			});
 	}
+
+	selectionChange(event: MatSelectChange) {
+		this.selectedPlayers = event.value;
+		this.game.playersData = this.selectedPlayers.map(player => ({ playerRef: player.playerRef, bet: 0 }));
+	}
+
+	betChange(event: Event, player: PlayerInfo) {
+		const input = event.target as HTMLInputElement;
+		const bet = parseInt(input.value);
+		const playerData = this.game?.playersData?.find(pd => pd.playerRef.id === player.id);
+		if (playerData) {
+			playerData.bet = bet;
+		}
+	}
+}
+
+interface PlayerInfo extends Player {
+	playerRef: DocumentReference;
 }

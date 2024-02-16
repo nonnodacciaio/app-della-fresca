@@ -10,7 +10,7 @@ import { Game, GamesService } from "../services/games.service";
 	selector: "games-list",
 	standalone: true,
 	template: ` <h3 class="text-center">Lista giocate</h3>
-		<div class="flex justify-center">
+		<div class="flex justify-center flex-col">
 			@for (game of games; track $index) {
 			<a
 				mat-button
@@ -38,6 +38,7 @@ export class GamesListComponent implements OnInit {
 	}
 
 	getGames() {
+		this.games = [];
 		this.service
 			.getAll()
 			.pipe(takeUntil(this.destroy$))
