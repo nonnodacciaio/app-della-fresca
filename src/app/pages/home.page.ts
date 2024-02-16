@@ -1,15 +1,17 @@
-import { Component, OnDestroy } from "@angular/core";
+import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { GamesListComponent } from "../components/games-list.component";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { ToolbarService } from "../services/toolbar.service";
-import { MatDialog, MatDialogContent, MatDialogModule, MatDialogTitle } from "@angular/material/dialog";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogContent, MatDialogModule, MatDialogTitle } from "@angular/material/dialog";
 import { FirebaseError } from "firebase/app";
 import { Subject, takeUntil } from "rxjs";
 import { EditTotalWinningsDialog } from "../components/game.component";
-import { Game, GamesService } from "../services/games.service";
+import { Game, GamesService, PlayerData } from "../services/games.service";
 import { MatInputModule } from "@angular/material/input";
 import { documentId } from "firebase/firestore";
+import { Player, PlayersService } from "../services/players.service";
+import { MatSelectModule } from "@angular/material/select";
 
 @Component({
 	selector: "home",
@@ -50,16 +52,44 @@ export class HomePage implements OnDestroy {
 	selector: "add-game",
 	standalone: true,
 	template: `<h2 mat-dialog-title>Aggiungi una giocata</h2>
+		<h3>Work in progress</h3>
 		<mat-dialog-content
-			>Work in progress<button
+			><mat-form-field>
+				<mat-label>Seleziona giocatori</mat-label
+				><mat-select
+					>@for(player of players; track player) {<mat-option [value]="player">{{ player.username }}</mat-option
+					>}</mat-select
+				></mat-form-field
+			><button
 				mat-icon-button
 				color="accent"
 				[mat-dialog-close]="">
 				<mat-icon>add</mat-icon>
 			</button></mat-dialog-content
 		>`,
-	imports: [MatDialogModule, MatButtonModule, MatInputModule, MatDialogTitle, MatDialogContent, MatIconModule]
+	imports: [MatDialogModule, MatButtonModule, MatInputModule, MatDialogTitle, MatDialogContent, MatIconModule, MatSelectModule]
 })
-export class AddGameDialog {
+export class AddGameDialog implements OnInit, OnDestroy {
 	game: Game = {};
+	players: Player[] = [];
+	destroy$ = new Subject();
+
+	constructor(private playersService: PlayersService) {}
+
+	ngOnInit(): void {
+		this.getPlayers();
+	}
+
+	ngOnDestroy(): void {}
+
+	private getPlayers() {
+		this.playersService
+			.getAll()
+			.pipe(takeUntil(this.destroy$))
+			.subscribe(result => {
+				result.docs.forEach(doc => {
+					this.players.push({ id: doc.id, ...(doc.data() as Player) });
+				});
+			});
+	}
 }
