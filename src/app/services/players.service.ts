@@ -17,8 +17,8 @@ export class PlayersService {
 		return from(getDoc(doc(this.collectionRef, id)));
 	}
 
-	create(game: Player) {
-		addDoc(this.collectionRef, game);
+	create(player: Player) {
+		return from(addDoc(this.collectionRef, player));
 	}
 
 	update(id: string, data: any) {

@@ -44,7 +44,8 @@ export class GamesListComponent implements OnInit {
 			.pipe(takeUntil(this.destroy$))
 			.subscribe({
 				next: result => result.forEach(doc => this.games.push({ id: doc.id, ...doc.data() })),
-				error: (error: FirebaseError) => console.error(error)
+				error: (error: FirebaseError) => console.error(error),
+				complete: () => this.games.sort((a, b) => ((a.date?.toDate() ?? 0) > (b.date?.toDate() ?? 0) ? -1 : 1))
 			});
 	}
 }

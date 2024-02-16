@@ -12,6 +12,8 @@ import { Player, PlayersService } from "../services/players.service";
 import { ToolbarService } from "../services/toolbar.service";
 import { FirebaseError } from "firebase/app";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { FormsModule } from "@angular/forms";
 
 @Component({
 	selector: "home",
@@ -58,8 +60,22 @@ export class HomePage implements OnDestroy {
 	selector: "add-game",
 	standalone: true,
 	template: `<h2 mat-dialog-title>Aggiungi una giocata</h2>
-		<mat-dialog-content
-			><mat-form-field>
+		<mat-dialog-content>
+			<mat-form-field
+				><mat-label>Aggiungi un giocatore</mat-label
+				><input
+					matInput
+					[(ngModel)]="newPlayer" />
+				@if (newPlayer) {
+				<button
+					matSuffix
+					mat-icon-button
+					(click)="addNewPlayer()">
+					<mat-icon>check</mat-icon>
+				</button>
+				}</mat-form-field
+			>
+			<mat-form-field>
 				<mat-label>Seleziona giocatori</mat-label
 				><mat-select
 					(selectionChange)="selectionChange($event)"
@@ -80,22 +96,26 @@ export class HomePage implements OnDestroy {
 				</mat-form-field>
 			</div>
 			}
-			<button
-				mat-icon-button
-				color="accent"
-				[mat-dialog-close]="game">
-				<mat-icon>add</mat-icon>
-			</button></mat-dialog-content
+			<div class="flex">
+				<button
+					class="ml-auto"
+					mat-icon-button
+					color="accent"
+					[mat-dialog-close]="game">
+					<mat-icon>add</mat-icon>
+				</button>
+			</div></mat-dialog-content
 		>`,
-	imports: [MatDialogModule, MatButtonModule, MatInputModule, MatDialogTitle, MatDialogContent, MatIconModule, MatSelectModule]
+	imports: [MatDialogModule, MatButtonModule, MatInputModule, MatDialogTitle, MatDialogContent, MatIconModule, MatSelectModule, FormsModule, MatFormFieldModule]
 })
 export class AddGameDialog implements OnInit, OnDestroy {
 	game: Game = { date: Timestamp.now(), result: 0 };
 	players: PlayerInfo[] = [];
 	selectedPlayers: PlayerInfo[] = [];
+	newPlayer = "";
 	destroy$ = new Subject();
 
-	constructor(private playersService: PlayersService) {}
+	constructor(public playersService: PlayersService, private snackBar: MatSnackBar) {}
 
 	ngOnInit(): void {
 		this.getPlayers();
@@ -104,6 +124,7 @@ export class AddGameDialog implements OnInit, OnDestroy {
 	ngOnDestroy(): void {}
 
 	private getPlayers() {
+		this.players = [];
 		this.playersService
 			.getAll()
 			.pipe(takeUntil(this.destroy$))
@@ -125,6 +146,21 @@ export class AddGameDialog implements OnInit, OnDestroy {
 		const playerData = this.game?.playersData?.find(pd => pd.playerRef.id === player.id);
 		if (playerData) {
 			playerData.bet = bet;
+		}
+	}
+
+	addNewPlayer() {
+		if (this.newPlayer) {
+			this.playersService
+				.create({ username: this.newPlayer })
+				.pipe(takeUntil(this.destroy$))
+				.subscribe({
+					complete: () => {
+						this.getPlayers();
+						this.newPlayer = "";
+					},
+					error: (error: FirebaseError) => this.snackBar.open(`Errore durante la creazione di un nuovo giocatore: ${error.message}`, "Chiudi")
+				});
 		}
 	}
 }
