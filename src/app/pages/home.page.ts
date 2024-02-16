@@ -56,7 +56,7 @@ export class HomePage implements OnDestroy {
 		<mat-dialog-content
 			><mat-form-field>
 				<mat-label>Seleziona giocatori</mat-label
-				><mat-select
+				><mat-select multiple
 					>@for(player of players; track player) {<mat-option [value]="player">{{ player.username }}</mat-option
 					>}</mat-select
 				></mat-form-field
