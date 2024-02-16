@@ -32,7 +32,7 @@ import { ToolbarService } from "../services/toolbar.service";
 
 			<ng-container matColumnDef="winning">
 				<mat-header-cell *matHeaderCellDef> Vincita </mat-header-cell>
-				<mat-cell *matCellDef="let element"> {{ element.winnings }}€ </mat-cell>
+				<mat-cell *matCellDef="let element"> {{ Math.round((element.winnings + Number.EPSILON}}€ </mat-cell>
 			</ng-container>
 
 			<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
