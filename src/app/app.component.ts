@@ -1,7 +1,7 @@
-import { Component } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { Component, ViewChild } from "@angular/core";
+import { Router, RouterOutlet } from "@angular/router";
 import { ToolbarComponent } from "./components/toolbar.component";
-import { MatSidenavModule } from "@angular/material/sidenav";
+import { MatDrawer, MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
 import { NavigationComponent } from "./components/navigation.component";
 
@@ -13,5 +13,12 @@ import { NavigationComponent } from "./components/navigation.component";
 	styleUrl: "./app.component.css"
 })
 export class AppComponent {
+	@ViewChild("drawer") drawer: MatDrawer | undefined;
 	title = "app-della-fresca";
+
+	constructor(private router: Router) {
+		this.router.events.subscribe(() => {
+			this.drawer?.close();
+		});
+	}
 }
