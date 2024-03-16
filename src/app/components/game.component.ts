@@ -38,11 +38,10 @@ import { ToolbarService } from "../services/toolbar.service";
 			<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
 			<mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
 		</mat-table>
-		<div class="flex m-4">
+		<div class="flex m-4 justify-end space-x-2">
 			<button
 				mat-raised-button
 				(click)="editTotalWinningsDialog()"
-				class="ml-auto"
 				color="primary">
 				<mat-icon>edit</mat-icon> Modifica vincita totale
 			</button>
@@ -50,7 +49,6 @@ import { ToolbarService } from "../services/toolbar.service";
 			<button
 				mat-raised-button
 				(click)="deleteGame()"
-				class="ml-auto"
 				color="warn">
 				<mat-icon>delete</mat-icon> Elimina la giocata
 			</button>
