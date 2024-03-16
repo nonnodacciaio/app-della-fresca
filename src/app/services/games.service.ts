@@ -26,7 +26,7 @@ export class GamesService {
 	}
 
 	delete(id: string) {
-		return deleteDoc(doc(this.collectionRef, id));
+		return from(deleteDoc(doc(this.collectionRef, id)));
 	}
 }
 

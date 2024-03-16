@@ -6,7 +6,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { FirebaseError } from "firebase/app";
 import { Subject, takeUntil } from "rxjs";
 import { Game, GamesService } from "../services/games.service";
@@ -46,6 +46,14 @@ import { ToolbarService } from "../services/toolbar.service";
 				color="primary">
 				<mat-icon>edit</mat-icon> Modifica vincita totale
 			</button>
+
+			<button
+				mat-raised-button
+				(click)="deleteGame()"
+				class="ml-auto"
+				color="warn">
+				<mat-icon>delete</mat-icon> Elimina la giocata
+			</button>
 		</div>
 		} @else {Non è stato possibile recuperare i dati della giocata}`,
 	styles: [
@@ -73,7 +81,8 @@ export class GameComponent implements OnInit, OnDestroy {
 		private dialog: MatDialog,
 		private snackBar: MatSnackBar,
 		private toolbarService: ToolbarService,
-		private playersService: PlayersService
+		private playersService: PlayersService,
+		private router: Router
 	) {
 		this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
 			this.id = params["id"];
@@ -167,9 +176,7 @@ export class GameComponent implements OnInit, OnDestroy {
 					.pipe(takeUntil(this.destroy$))
 					.subscribe({
 						error: (error: FirebaseError) => console.log(error),
-						next: () => {
-							this.getGame();
-						}
+						next: () => this.getGame()
 					});
 			}
 		});
@@ -179,6 +186,20 @@ export class GameComponent implements OnInit, OnDestroy {
 		const totalBet = this.dataSource.data.reduce((acc, player) => acc + (player.bet ?? 0), 0) ?? 0;
 		const totalWinning = this.game?.result ?? 0;
 		this.dataSource.data = [...this.dataSource.data, { playerId: null, username: "Totale", bet: totalBet, winnings: totalWinning }];
+	}
+
+	deleteGame() {
+		const res = confirm("Sei sicuro di voler eliminare questa giocata?");
+
+		if (!res) return;
+
+		this.gamesService
+			.delete(this.id)
+			.pipe(takeUntil(this.destroy$))
+			.subscribe({
+				next: () => this.router.navigate(["/"]),
+				error: (error: FirebaseError) => this.snackBar.open(`Errore durante l'eliminazione della giocata: ${error.message}`, "Chiudi")
+			});
 	}
 }
 

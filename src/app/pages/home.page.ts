@@ -61,41 +61,43 @@ export class HomePage implements OnDestroy {
 	standalone: true,
 	template: `<h2 mat-dialog-title>Aggiungi una giocata</h2>
 		<mat-dialog-content>
-			<mat-form-field
-				><mat-label>Aggiungi un giocatore</mat-label
-				><input
-					matInput
-					[(ngModel)]="newPlayer" />
-				@if (newPlayer) {
-				<button
-					matSuffix
-					mat-icon-button
-					(click)="addNewPlayer()">
-					<mat-icon>check</mat-icon>
-				</button>
-				}</mat-form-field
-			>
-			<mat-form-field>
-				<mat-label>Seleziona giocatori</mat-label
-				><mat-select
-					(selectionChange)="selectionChange($event)"
-					multiple
-					>@for(player of players; track player) {<mat-option [value]="player">{{ player.username }}</mat-option
-					>}</mat-select
-				></mat-form-field
-			>
-			@for(player of selectedPlayers; track player) {
-			<div>
-				{{ player.username }}
-				<mat-form-field>
-					<mat-label>Inserisci puntata</mat-label>
-					<input
+			<div class="flex flex-col">
+				<mat-form-field
+					><mat-label>Aggiungi un giocatore</mat-label
+					><input
 						matInput
-						type="number"
-						(input)="betChange($event, player)" />
-				</mat-form-field>
+						[(ngModel)]="newPlayer" />
+					@if (newPlayer) {
+					<button
+						matSuffix
+						mat-icon-button
+						(click)="addNewPlayer()">
+						<mat-icon>check</mat-icon>
+					</button>
+					}</mat-form-field
+				>
+				<mat-form-field>
+					<mat-label>Seleziona giocatori</mat-label
+					><mat-select
+						(selectionChange)="selectionChange($event)"
+						multiple
+						>@for(player of players; track player) {<mat-option [value]="player">{{ player.username }}</mat-option
+						>}</mat-select
+					></mat-form-field
+				>
+				@for(player of selectedPlayers; track player) {
+				<div>
+					{{ player.username }}
+					<mat-form-field>
+						<mat-label>Inserisci puntata</mat-label>
+						<input
+							matInput
+							type="number"
+							(input)="betChange($event, player)" />
+					</mat-form-field>
+				</div>
+				}
 			</div>
-			}
 			<div class="flex">
 				<button
 					class="ml-auto"
@@ -121,7 +123,10 @@ export class AddGameDialog implements OnInit, OnDestroy {
 		this.getPlayers();
 	}
 
-	ngOnDestroy(): void {}
+	ngOnDestroy(): void {
+		this.destroy$.next(null);
+		this.destroy$.complete();
+	}
 
 	private getPlayers() {
 		this.players = [];
